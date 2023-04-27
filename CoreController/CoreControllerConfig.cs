@@ -11,5 +11,7 @@ namespace CoreController
         
         private List<LogicalProcessors> _AllowedProcessors = new List<LogicalProcessors>();
         public List<LogicalProcessors> AllowedProcessors { get => _AllowedProcessors; set => SetValue(ref _AllowedProcessors, value); }
+        
+        
     }
 }

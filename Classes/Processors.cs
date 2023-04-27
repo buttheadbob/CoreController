@@ -12,7 +12,7 @@ namespace CoreController.Classes
 
         public string GetButtonName
         {
-            get => "Logical Core " + ID;
+            get => "Core " + ID;
         }
 
         public SolidColorBrush Color
@@ -24,7 +24,7 @@ namespace CoreController.Classes
                     if (logicalProcessor.ID == ID)
                         return new SolidColorBrush(Colors.Green);
                 }
-                return new SolidColorBrush(Colors.Red);
+                return new SolidColorBrush(Colors.Firebrick);
             }
         }
 

@@ -5,13 +5,22 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:CoreController"
       mc:Ignorable="d" 
+      Background="#FF1E1E1E"
       d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style x:Key="MyCoresButtonStyle" TargetType="{x:Type Button}">
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
-            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
@@ -19,31 +28,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row ="0" VerticalAlignment="Center" Text="CoreController" FontWeight="Bold" FontSize="20" Grid.ColumnSpan="3" Margin="5"/>
-        <DataGrid Name="dGridProcessors" Grid.Column="1" Grid.Row="1" EnableRowVirtualization="True"  CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Access" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Tag="{Binding ID}" Content="Enable/Disable" Margin="5" Click="ButtonBase_OnClick"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Logical Cores" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Margin="5" Text="{Binding GetButtonName}" Background="{Binding Color}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+        <TextBlock Grid.Column="0" Grid.Row ="0" FontWeight="Bold" FontSize="36" Foreground="#FF27E915" VerticalAlignment="Center" Text="CoreController" Grid.ColumnSpan="3" Margin="5"/>
+        
+        <TextBlock Grid.Column="1" Grid.Row="1" FontSize="15" Foreground="#FF27E915" Text="Clicking on each logical core listed below will allow access (green) or block access (red) to that logical core."/>
+        <Grid Grid.Column="1" Grid.Row="2" x:Name="LogicalProcessorGrid" >
+           
+        </Grid>
 
-        <Button Grid.Column="3" Grid.Row="4" Content="Save Config" Margin="5" Click="SaveButton_OnClick"></Button>
     </Grid>
 </UserControl>
