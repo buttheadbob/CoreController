@@ -1,7 +1,11 @@
 <p align="center">
   <a href="https://discord.gg/rSuxGrHrrt">
     <img src="https://img.shields.io/badge/VERSION-1.0.0.1-red" alt="Discord Server">
-  </a></p>  
+  </a>
+  <a href="https://discord.gg/rSuxGrHrrt">
+    <img src="https://discordapp.com/api/guilds/1089078620829536269/widget.png?style=shield" alt="Discord Server">
+  </a>
+  </p>  
   
 <h2 style="text-align: center;">Control which logical processor your Torch server can work with!</h2><h4>(and the attached SE Dedicated Server)</h3>  
 
