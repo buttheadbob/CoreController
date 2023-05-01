@@ -8,34 +8,96 @@
       Background="#FF1E1E1E"
       d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <Style x:Key="MyCoresButtonStyle" TargetType="{x:Type Button}">
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="5" />
-                </Style>
-            </Style.Resources>
+        
+        
+        <Style TargetType="TabControl">
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="Background" Value="LightBlue"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TabPanel Grid.Row="0" IsItemsHost="true"/>
+                            <Border Grid.Row="1" BorderBrush="Black" Height="200" BorderThickness="1" CornerRadius="5">
+                                <ContentPresenter ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <Style TargetType="TabItem">
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Foreground" Value="#FF27E915"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Grid>
+                            <Border Name="Border" Background="Transparent" BorderBrush="Black" BorderThickness="1" CornerRadius="5,5,1,1">
+                                <ContentPresenter x:Name="ContentSite"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"
+                                                  ContentSource="Header"
+                                                  Margin="12,2,12,2"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="Black"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter TargetName="Border" Property="Background" Value="Transparent"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
     <Grid>
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row ="0" FontWeight="Bold" FontSize="36" Foreground="#FF27E915" VerticalAlignment="Center" Text="CoreController" Grid.ColumnSpan="3" Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row ="0" Foreground="#FF27E915" FontWeight="Bold" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CoreController" Grid.ColumnSpan="3" Margin="5"/>
+        <TabControl Grid.Column="1" Grid.Row="1">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabPanel}">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+            </TabControl.Resources>
+            <TabItem Name="EasyModeTab" Header="Easy Mode" >
+                
+            </TabItem>
+            
+            <TabItem Header="Per Physical Processor" >
+                
+            </TabItem>
+            
+            <TabItem Header="Per Numa Node">
+                
+            </TabItem>
+        </TabControl>
         
-        <TextBlock Grid.Column="1" Grid.Row="1" FontSize="15" Foreground="#FF27E915" Text="Clicking on each logical core listed below will allow access (green) or block access (red) to that logical core."/>
-        <Grid Grid.Column="1" Grid.Row="2" x:Name="LogicalProcessorGrid" >
-           
-        </Grid>
-
+        
+        <!-- LEGACY CODE <Grid Grid.Column="1" Grid.Row="2" x:Name="LogicalProcessorGrid" > -->
     </Grid>
+
 </UserControl>

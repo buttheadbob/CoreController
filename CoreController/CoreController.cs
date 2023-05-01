@@ -1,9 +1,10 @@
 ﻿using NLog;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Windows.Controls;
 using Torch;
 using Torch.API;
@@ -11,12 +12,9 @@ using Torch.API.Managers;
 using Torch.API.Plugins;
 using Torch.API.Session;
 using Torch.Session;
-using System.Management;
-using System.Threading.Tasks;
 using CoreController.UI;
-using System.Diagnostics;
-using System.Text;
 using CoreController.Classes;
+using static CoreController.CoreManager;
 
 namespace CoreController
 {
@@ -24,10 +22,10 @@ namespace CoreController
     {
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private static readonly string CONFIG_FILE_NAME = "CoreControllerConfig.cfg";
-        private bool firstrun;
+        public bool firstrun;
         
         public static CoreControllerMain Instance;
-        public static ObservableCollection<LogicalProcessorsRaw> LogicalCores = new ObservableCollection<LogicalProcessorsRaw>();
+        public static ObservableCollection<LogicalProcessorRaw> LogicalCores = new ObservableCollection<LogicalProcessorRaw>();
 
         private CoreControllerControl _control;
         public UserControl GetControl() => _control ?? (_control = new CoreControllerControl(this));
@@ -35,7 +33,7 @@ namespace CoreController
         private Persistent<CoreControllerConfig> _config;
         public CoreControllerConfig Config => _config?.Data;
 
-        public override async void Init(ITorchBase torch)
+        public override void Init(ITorchBase torch)
         {
             Instance = this;
             base.Init(torch);
@@ -49,7 +47,8 @@ namespace CoreController
                 Log.Warn("No session manager loaded!");
 
             Save();
-            await GetLogicalCores();
+            GetLogicalCores();
+            NumaManager.UpdateNumaTopology();
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -100,45 +99,20 @@ namespace CoreController
                 Log.Warn(e, "Configuration failed to save");
             }
         }
-
-        public Task GetLogicalCores()
+    }
+    
+    public static class ObjectPrinter
+    {
+        public static StringBuilder PrintObjectProperties(object obj)
         {
-            // Get the number of logical processors
-            int numberOfLogicalProcessors = Environment.ProcessorCount;
-
-            // Display the list of logical processors
-            for (int i = 0; i < numberOfLogicalProcessors; i++)
+            StringBuilder debug = new StringBuilder();
+            PropertyInfo[] properties = obj.GetType().GetProperties();
+            foreach (PropertyInfo property in properties)
             {
-                Process proc = Process.GetCurrentProcess();
-                IntPtr affinityMask = proc.ProcessorAffinity;
-                bool isOn = ((affinityMask.ToInt64() >> i) & 1) == 1;
+                object value = property.GetValue(obj);
+                debug.AppendLine($"{property.Name}: {value}");
             }
-
-            for (int p = 0; p < numberOfLogicalProcessors; p++)
-            {
-                Process proc = Process.GetCurrentProcess();
-                IntPtr affinityMask = proc.ProcessorAffinity;
-                LogicalProcessorsRaw core = new LogicalProcessorsRaw { ID = p + 1, AffinityMask = affinityMask };
-                LogicalCores.Add(core);
-                if (firstrun)
-                    Instance.Config.AllowedProcessors.Add(core.ConvertToUnRaw());
-            }
-            Save();
-            ResetAffinity();
-
-            return Task.CompletedTask;
-        }
-        
-        public void ResetAffinity()
-        {
-            // Get the current process
-            Process currentProcess = Process.GetCurrentProcess();
-            long bitmask = 0;
-            foreach (LogicalProcessors core in Config.AllowedProcessors)
-            {
-                bitmask |= (1L << (core.ID - 1));
-            }
-            currentProcess.ProcessorAffinity = (IntPtr)bitmask;
+            return debug;
         }
     }
 }

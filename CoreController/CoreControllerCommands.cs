@@ -1,6 +1,5 @@
 ﻿using Torch.Commands;
 using Torch.Commands.Permissions;
-using VRage.Game.ModAPI;
 
 namespace CoreController
 {

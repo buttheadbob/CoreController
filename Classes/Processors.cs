@@ -7,13 +7,11 @@ namespace CoreController.Classes
     public sealed class LogicalProcessors
     {
         public int ID {get; set;}
-
+        public int GroupRelativeProcessorNumber { get; set; }
         public string AffinityMask { get; set; }
-
-        public string GetButtonName
-        {
-            get => "Core " + ID;
-        }
+        public int ProcessorGroup { get; set; }
+        public int PhysicalProcessor { get; set; }
+        public string GetButtonName => "Core " + ID;
 
         public SolidColorBrush Color
         {
@@ -27,9 +25,5 @@ namespace CoreController.Classes
                 return new SolidColorBrush(Colors.Firebrick);
             }
         }
-
-        
-            
-        
     }
 }

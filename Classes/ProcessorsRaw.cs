@@ -4,15 +4,19 @@ using System.Windows.Media;
 
 namespace CoreController.Classes
 {
-    public sealed class LogicalProcessorsRaw
+    public sealed class LogicalProcessorRaw
     {
+        public string PID { get; set; }
         public int ID {get; set;}
-
         public IntPtr AffinityMask { get; set; }
-
+        public int PhysicalProcessorID { get; set; }
+        public int Node { get; set; }
         public string GetButtonName
         {
-            get => "Core " + ID;
+            get
+            {
+                return ID < 10 ? $"‎{ID}" : ID.ToString();
+            }
         }
 
         public SolidColorBrush Color
@@ -25,7 +29,7 @@ namespace CoreController.Classes
                         return new SolidColorBrush(Colors.Green);
                 }
 
-                return new SolidColorBrush(Colors.Firebrick);
+                return new SolidColorBrush(Colors.DarkSlateGray);
             }
         }
 
@@ -36,11 +40,6 @@ namespace CoreController.Classes
                 ID = ID,
                 AffinityMask = Marshal.PtrToStringAuto(AffinityMask)
             };
-            
         }
-
-        
-            
-        
     }
 }
