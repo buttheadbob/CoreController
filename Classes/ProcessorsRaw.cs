@@ -6,9 +6,8 @@ namespace CoreController.Classes
 {
     public sealed class LogicalProcessorRaw
     {
-        public string PID { get; set; }
+        public int PID { get; set; }
         public int ID {get; set;}
-        public IntPtr AffinityMask { get; set; }
         public int PhysicalProcessorID { get; set; }
         public int Node { get; set; }
         public string GetButtonName
@@ -25,7 +24,7 @@ namespace CoreController.Classes
             {
                 for (int index = CoreControllerMain.Instance.Config.AllowedProcessors.Count - 1; index >= 0; index--)
                 {
-                    if (CoreControllerMain.Instance.Config.AllowedProcessors[index].ID == ID)
+                    if (CoreControllerMain.Instance.Config.AllowedProcessors[index].PID == PID)
                         return new SolidColorBrush(Colors.Green);
                 }
 
@@ -35,11 +34,7 @@ namespace CoreController.Classes
 
         public LogicalProcessors ConvertToUnRaw()
         {
-            return new LogicalProcessors
-            {
-                ID = ID,
-                AffinityMask = Marshal.PtrToStringAuto(AffinityMask)
-            };
+            return new LogicalProcessors {PID = PID, ID = ID};
         }
     }
 }

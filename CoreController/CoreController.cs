@@ -2,7 +2,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Reflection;
 using System.Text;
 using System.Windows.Controls;
@@ -23,11 +25,11 @@ namespace CoreController
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private static readonly string CONFIG_FILE_NAME = "CoreControllerConfig.cfg";
         public bool firstrun;
-        
         public static CoreControllerMain Instance;
         public static ObservableCollection<LogicalProcessorRaw> LogicalCores = new ObservableCollection<LogicalProcessorRaw>();
+        public bool readMessage = false;
 
-        private CoreControllerControl _control;
+        public CoreControllerControl _control;
         public UserControl GetControl() => _control ?? (_control = new CoreControllerControl(this));
 
         private Persistent<CoreControllerConfig> _config;
@@ -45,10 +47,11 @@ namespace CoreController
                 sessionManager.SessionStateChanged += SessionChanged;
             else
                 Log.Warn("No session manager loaded!");
-
             Save();
             GetLogicalCores();
             NumaManager.UpdateNumaTopology();
+            UpdateCheck.VerifyConfigVersion();
+            
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -85,6 +88,8 @@ namespace CoreController
                 _config = new Persistent<CoreControllerConfig>(configFile, new CoreControllerConfig());
                 _config.Save();
             }
+
+            Config.Version = UpdateCheck.minVersion;
         }
 
         public void Save()
@@ -98,6 +103,26 @@ namespace CoreController
             {
                 Log.Warn(e, "Configuration failed to save");
             }
+        } 
+    }
+
+    static class UpdateCheck
+    {
+        public static readonly string minVersion = "1,1,0,1";
+        public static void VerifyConfigVersion()
+        {
+            if (!string.IsNullOrEmpty(CoreControllerMain.Instance.Config.Version)) return;
+            if (CoreControllerMain.Instance.Config.Version == minVersion) return;
+            
+            int[] logicalCores = CoreControllerMain.Instance.Config.AllowedProcessors.Select(x => x.ID).ToArray();
+            CoreControllerMain.Instance.Config.AllowedProcessors.Clear();
+
+            foreach (var core in CoreControllerMain.LogicalCores)
+            {
+                if (logicalCores.Contains(core.ID))
+                    CoreControllerMain.Instance.Config.AllowedProcessors.Add(core.ConvertToUnRaw());
+            }
+            CoreControllerMain.Instance.Save();
         }
     }
     

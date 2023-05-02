@@ -8,9 +8,7 @@
       Background="#FF1E1E1E"
       d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        
-        
-        <Style TargetType="TabControl">
+        <Style TargetType="{x:Type TabControl}">
             <Setter Property="BorderThickness" Value="3"/>
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="Background" Value="LightBlue"/>
@@ -23,7 +21,7 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <TabPanel Grid.Row="0" IsItemsHost="true"/>
-                            <Border Grid.Row="1" BorderBrush="Black" Height="200" BorderThickness="1" CornerRadius="5">
+                            <Border Grid.Row="1" BorderBrush="Black" Height="Auto" BorderThickness="1" CornerRadius="5">
                                 <ContentPresenter ContentSource="SelectedContent" />
                             </Border>
                         </Grid>
@@ -32,7 +30,7 @@
             </Setter>
         </Style>
         
-        <Style TargetType="TabItem">
+        <Style TargetType="{x:Type TabItem}">
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="BorderBrush" Value="Black"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -77,7 +75,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Column="0" Grid.Row ="0" Foreground="#FF27E915" FontWeight="Bold" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CoreController" Grid.ColumnSpan="3" Margin="5"/>
-        <TabControl Grid.Column="1" Grid.Row="1">
+        <TabControl Name="Tabby" Grid.Column="1" Grid.Row="1">
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabPanel}">
                     <Setter Property="HorizontalAlignment" Value="Center" />
@@ -87,17 +85,14 @@
                 
             </TabItem>
             
-            <TabItem Header="Per Physical Processor" >
+            <TabItem Name="PerPhysicalProcessor" Header="Per Physical Processor" >
                 
             </TabItem>
             
-            <TabItem Header="Per Numa Node">
+            <TabItem Name="PerNumaNode" Header="Per Numa Node">
                 
             </TabItem>
         </TabControl>
-        
-        
-        <!-- LEGACY CODE <Grid Grid.Column="1" Grid.Row="2" x:Name="LogicalProcessorGrid" > -->
     </Grid>
 
 </UserControl>
