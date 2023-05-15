@@ -9,6 +9,7 @@ namespace CoreController.UI
         public EasyMode easyWindow = new EasyMode();
         public PerPhysicalProcessor ppp = new PerPhysicalProcessor();
         public NumaMode pnn = new NumaMode();
+        public Settings settings = new Settings();
         
         private CoreControllerControl()
         {
@@ -22,6 +23,7 @@ namespace CoreController.UI
             EasyModeTab.Content = easyWindow;
             PerPhysicalProcessor.Content = ppp;
             PerNumaNode.Content = pnn;
+            SettingsPage.Content = settings;
         }
     }
 }

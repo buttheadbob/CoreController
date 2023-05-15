@@ -5,13 +5,11 @@ using System.Management;
 using System.Windows;
 using System.Windows.Controls;
 using CoreController.Classes;
-using NLog;
 
 namespace CoreController
 {
     public static class CoreManager
     {
-        static Logger log = LogManager.GetCurrentClassLogger();
         public static void GetLogicalCores()
         {
             GetProcessorInformation();
@@ -20,7 +18,7 @@ namespace CoreController
             ResetAffinity();
         }
 
-        public static void ResetAffinity()
+        private static void ResetAffinity()
         {
             // Get the current process
             Process currentProcess = Process.GetCurrentProcess();
@@ -28,22 +26,22 @@ namespace CoreController
             
             if (CoreControllerMain.Instance.Config.AllowedProcessors.Count == 0)
             {
-                foreach (var core in CoreControllerMain.LogicalCores)
+                foreach (LogicalProcessorRaw core in CoreControllerMain.LogicalCores)
                 {
                     CoreControllerMain.Instance.Config.AllowedProcessors.Add(core.ConvertToUnRaw());
                 }
                 return;
             }
-            
-            foreach (LogicalProcessors core in CoreControllerMain.Instance.Config.AllowedProcessors)
+
+            for (int index = CoreControllerMain.Instance.Config.AllowedProcessors.Count - 1; index >= 0; index--)
             {
-                bitmask |= (1L << core.ID);
+                bitmask |= (1L << CoreControllerMain.Instance.Config.AllowedProcessors[index].ID);
             }
 
             currentProcess.ProcessorAffinity = (IntPtr) bitmask;
         }
 
-        public static void GetProcessorInformation()
+        private static void GetProcessorInformation()
         {
             List<LogicalProcessorRaw> logicalProcessorInfoList = new List<LogicalProcessorRaw>();
 
@@ -55,8 +53,9 @@ namespace CoreController
                 ManagementObjectCollection results = searcher.Get();
                 
                 int logicalProcessorCount = 0;
-                foreach (ManagementObject obj in results)
+                foreach (ManagementBaseObject o in results)
                 {
+                    ManagementObject obj = (ManagementObject) o;
                     uint numberOfLogicalProcessors = (uint)obj["NumberOfLogicalProcessors"];
                     string deviceId =  obj["DeviceID"].ToString().Replace("CPU", "");
 
@@ -76,6 +75,10 @@ namespace CoreController
                 foreach (LogicalProcessorRaw raw in logicalProcessorInfoList)
                 {
                     CoreControllerMain.LogicalCores.Add(raw);
+                    
+                    // If no cores are allowed, allow all!
+                    if (CoreControllerMain.Instance.firstrun)
+                        CoreControllerMain.Instance.Config.AllowedProcessors.Add(raw.ConvertToUnRaw());
                 }
             }
         }
@@ -99,8 +102,12 @@ namespace CoreController
             bool found = false;
             for (int index = CoreControllerMain.Instance.Config.AllowedProcessors.Count - 1; index >= 0; index--)
             {
-                if (CoreControllerMain.Instance.Config.AllowedProcessors.Count == 1) continue;
                 if (CoreControllerMain.Instance.Config.AllowedProcessors[index].PID != PID) continue;
+                if (CoreControllerMain.Instance.Config.AllowedProcessors.Count == 1)
+                {
+                    CoreControllerMain.Log.Warn("Attemt to disable all cores is not allowed.  You must have at least one core enabled, 4 would be much better!!");
+                    return;
+                }
                 CoreControllerMain.Instance.Config.AllowedProcessors.RemoveAt(index);
                 found = true;
                 break;

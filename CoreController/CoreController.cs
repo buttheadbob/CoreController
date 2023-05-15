@@ -1,12 +1,12 @@
 ﻿using NLog;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
-using System.Management.Instrumentation;
 using System.Reflection;
 using System.Text;
+using System.Timers;
 using System.Windows.Controls;
 using Torch;
 using Torch.API;
@@ -22,12 +22,12 @@ namespace CoreController
 {
     public class CoreControllerMain : TorchPluginBase, IWpfPlugin
     {
-        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        public static readonly Logger Log = LogManager.GetLogger("CoreController");
         private static readonly string CONFIG_FILE_NAME = "CoreControllerConfig.cfg";
         public bool firstrun;
         public static CoreControllerMain Instance;
         public static ObservableCollection<LogicalProcessorRaw> LogicalCores = new ObservableCollection<LogicalProcessorRaw>();
-        public bool readMessage = false;
+        private Timer _enforcementTimer = new Timer();
 
         public CoreControllerControl _control;
         public UserControl GetControl() => _control ?? (_control = new CoreControllerControl(this));
@@ -41,8 +41,11 @@ namespace CoreController
             base.Init(torch);
             SetupConfig();
             if (!Config.AllowedProcessors.Any())
+            {
                 firstrun = true;
-            var sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
+                Log.Warn("This is either your first time running CoreController or you have removed all allowed processors.  Resetting Processors to all allowed.");
+            }
+            TorchSessionManager sessionManager = Torch.Managers.GetManager<TorchSessionManager>();
             if (sessionManager != null)
                 sessionManager.SessionStateChanged += SessionChanged;
             else
@@ -50,8 +53,23 @@ namespace CoreController
             Save();
             GetLogicalCores();
             NumaManager.UpdateNumaTopology();
-            UpdateCheck.VerifyConfigVersion();
-            
+            _enforcementTimer.Elapsed += EnforcementTimerOnElapsed;
+            _enforcementTimer.Interval = Config.EnforcementFrequency * 1000;
+            _enforcementTimer.Start();
+        }
+
+        private void EnforcementTimerOnElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!Config.EnabledTimer) return;
+            Process currentProcess = Process.GetCurrentProcess();
+            long bitmask = 0;
+
+            for (int index = Instance.Config.AllowedProcessors.Count - 1; index >= 0; index--)
+            {
+                bitmask |= (1L << Instance.Config.AllowedProcessors[index].ID);
+            }
+
+            currentProcess.ProcessorAffinity = (IntPtr) bitmask;
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -88,8 +106,6 @@ namespace CoreController
                 _config = new Persistent<CoreControllerConfig>(configFile, new CoreControllerConfig());
                 _config.Save();
             }
-
-            Config.Version = UpdateCheck.minVersion;
         }
 
         public void Save()
@@ -104,26 +120,6 @@ namespace CoreController
                 Log.Warn(e, "Configuration failed to save");
             }
         } 
-    }
-
-    static class UpdateCheck
-    {
-        public static readonly string minVersion = "1,1,0,1";
-        public static void VerifyConfigVersion()
-        {
-            if (!string.IsNullOrEmpty(CoreControllerMain.Instance.Config.Version)) return;
-            if (CoreControllerMain.Instance.Config.Version == minVersion) return;
-            
-            int[] logicalCores = CoreControllerMain.Instance.Config.AllowedProcessors.Select(x => x.ID).ToArray();
-            CoreControllerMain.Instance.Config.AllowedProcessors.Clear();
-
-            foreach (var core in CoreControllerMain.LogicalCores)
-            {
-                if (logicalCores.Contains(core.ID))
-                    CoreControllerMain.Instance.Config.AllowedProcessors.Add(core.ConvertToUnRaw());
-            }
-            CoreControllerMain.Instance.Save();
-        }
     }
     
     public static class ObjectPrinter

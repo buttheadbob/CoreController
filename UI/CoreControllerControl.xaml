@@ -92,6 +92,10 @@
             <TabItem Name="PerNumaNode" Header="Per Numa Node">
                 
             </TabItem>
+            
+            <TabItem Name="SettingsPage" Header="Settings">
+                
+            </TabItem>
         </TabControl>
     </Grid>
 
